@@ -166,8 +166,8 @@ public class PerfectX extends Configured implements Tool {
 
         Configuration conf = getConf();
         Job job = Job.getInstance(conf);
-        job.setJobName(WordCount.class.getSimpleName());
-        job.setJarByClass(WordCount.class);
+        job.setJobName(PerfectX.class.getSimpleName());
+        job.setJarByClass(PerfectX.class);
 
         job.setNumReduceTasks(args.numReducers);
 
