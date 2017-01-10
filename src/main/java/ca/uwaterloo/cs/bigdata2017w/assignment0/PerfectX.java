@@ -158,7 +158,7 @@ public class PerfectX extends Configured implements Tool {
             return -1;
         }
 
-        LOG.info("Tool: " + WordCount.class.getSimpleName());
+        LOG.info("Tool: " + PerfectX.class.getSimpleName());
         LOG.info(" - input path: " + args.input);
         LOG.info(" - output path: " + args.output);
         LOG.info(" - number of reducers: " + args.numReducers);
