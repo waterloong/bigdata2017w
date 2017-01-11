@@ -47,7 +47,7 @@ import java.util.Map;
  * Simple word count demo.
  */
 public class PerfectX extends Configured implements Tool {
-    private static final Logger LOG = Logger.getLogger(WordCount.class);
+    private static final Logger LOG = Logger.getLogger(PerfectX.class);
 
     // Mapper: emits (token, 1) for every word occurrence.
     public static final class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {

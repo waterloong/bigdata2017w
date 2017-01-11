@@ -3,7 +3,7 @@ Assignment 0
 
 Question 1
 ------------
-The most frequent X is "love". It appears 4 times.
+The most frequent X is "love". It appeared 4 times.
 
 Question 2
 -------------
@@ -15,7 +15,7 @@ Question 3
 
 Question 4
 ---------------
-The word "waterloo" appears 3520 times.
+The word "waterloo" appeared 3520 times.
 
 Question 5
 ------------------
@@ -23,11 +23,11 @@ Question 5
 | ------------- |:-------------:| -----:|
 |game | 340 |
 |for	| 219 |
-and	| 198 |
-day	| 179 |
-score |	161 |
-world	| 137 |
-record	| 130 |
-lrb |	119 |
-dark |	117 |
-strangers	| 113 |
+|and	| 198 |
+|day	| 179 |
+|score |	161 |
+|world	| 137 |
+|record	| 130 |
+|lrb |	119 |
+|dark |	117 |
+|strangers	| 113 |
