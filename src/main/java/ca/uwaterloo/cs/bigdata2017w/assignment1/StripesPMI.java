@@ -194,10 +194,10 @@ public class StripesPMI extends Configured implements Tool {
                 fmap.clear();
                 for (String w2: imap.keySet()) {
                     int count = imap.get(w2);
-                    int count1 = this.wordCounts.get(key);
-                    int count2 = this.wordCounts.get(w2);
-                    float pmi = (float) Math.log10(numberOfLines / count1 * count / count2);
                     if (count >= threshold) {
+                        int count1 = this.wordCounts.get(key);
+                        int count2 = this.wordCounts.get(w2);
+                        float pmi = (float) Math.log10(numberOfLines / count1 * count / count2);
                         fmap.increment(w2, pmi);
                     }
                 }
