@@ -25,7 +25,6 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.map.HMapStFW;
 import tl.lin.data.map.HMapStIW;
-import tl.lin.data.pair.PairOfStrings;
 
 import java.io.IOException;
 import java.util.*;
@@ -321,10 +320,10 @@ public class StripesPMI extends Configured implements Tool {
         FileInputFormat.setInputPaths(pairJob, new Path(args.input));
         FileOutputFormat.setOutputPath(pairJob, new Path(args.output));
 
-        pairJob.setMapOutputKeyClass(PairOfStrings.class);
-        pairJob.setMapOutputValueClass(IntWritable.class);
-        pairJob.setOutputKeyClass(PairOfStrings.class);
-        pairJob.setOutputValueClass(IntWritable.class);
+        pairJob.setMapOutputKeyClass(Text.class);
+        pairJob.setMapOutputValueClass(HMapStIW.class);
+        pairJob.setOutputKeyClass(Text.class);
+        pairJob.setOutputValueClass(HMapStFW.class);
 
         pairJob.setMapperClass(StripesMapper.class);
         if (args.imc) {
