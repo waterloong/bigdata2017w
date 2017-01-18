@@ -49,7 +49,7 @@ public class PairsPMI extends Configured implements Tool {
                     KEY.set(word);
                     context.write(KEY, ONE);
                 }
-                if (count > 40) break;
+                if (count >= 40) break;
             }
             // count line number, even if no tokens
             KEY.set("*");
@@ -119,7 +119,7 @@ public class PairsPMI extends Configured implements Tool {
             for (String word : Tokenizer.tokenize(value.toString())) {
                 uniqueWords.add(word);
                 count++;
-                if (count > 40) break;
+                if (count >= 40) break;
             }
             for (String w1 : uniqueWords) {
                 for (String w2 : uniqueWords) {

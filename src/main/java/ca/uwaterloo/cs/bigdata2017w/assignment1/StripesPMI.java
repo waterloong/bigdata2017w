@@ -49,7 +49,7 @@ public class StripesPMI extends Configured implements Tool {
                     KEY.set(word);
                     context.write(KEY, ONE);
                 }
-                if (count > 40) break;
+                if (count >= 40) break;
             }
             // count line number, even if no tokens
             KEY.set("*");
@@ -119,7 +119,7 @@ public class StripesPMI extends Configured implements Tool {
             for (String word : Tokenizer.tokenize(value.toString())) {
                 uniqueWords.add(word);
                 count++;
-                if (count > 40) break;
+                if (count >= 40) break;
             }
             for (String w1 : uniqueWords) {
                 MAP.clear();
@@ -141,13 +141,11 @@ public class StripesPMI extends Configured implements Tool {
         public void reduce(Text key, Iterable<HMapStIW> values, Context context)
                 throws IOException, InterruptedException {
             Iterator<HMapStIW> iter = values.iterator();
-            if (iter.hasNext()) {
-                HMapStIW map = iter.next();
-                while (iter.hasNext()) {
-                    map.plus(iter.next());
-                }
-                context.write(key, map);
+            HMapStIW map = new HMapStIW();
+            while (iter.hasNext()) {
+                map.plus(iter.next());
             }
+            context.write(key, map);
 
         }
     }
@@ -186,24 +184,23 @@ public class StripesPMI extends Configured implements Tool {
         public void reduce(Text key, Iterable<HMapStIW> values, Context context)
                 throws IOException, InterruptedException {
             Iterator<HMapStIW> iter = values.iterator();
-            if (iter.hasNext()) {
-                HMapStIW imap = iter.next();
-                while (iter.hasNext()) {
-                    imap.plus(iter.next());
+            HMapStIW imap = new HMapStIW();
+            while (iter.hasNext()) {
+                imap.plus(iter.next());
+            }
+            fmap.clear();
+
+            for (String w2: imap.keySet()) {
+                int coocurrence = imap.get(w2);
+                if (coocurrence >= threshold) {
+                    int count1 = this.wordCounts.get(key.toString());
+                    int count2 = this.wordCounts.get(w2);
+                    float pmi = (float) Math.log10(numberOfLines / count1 * coocurrence / count2);
+                    fmap.increment(w2, pmi);
                 }
-                fmap.clear();
-                for (String w2: imap.keySet()) {
-                    int count = imap.get(w2);
-                    if (count >= threshold) {
-                        int count1 = this.wordCounts.get(key);
-                        int count2 = this.wordCounts.get(w2);
-                        float pmi = (float) Math.log10(numberOfLines / count1 * count / count2);
-                        fmap.increment(w2, pmi);
-                    }
-                }
-                if (fmap.size() > 0) {
-                    context.write(key, fmap);
-                }
+            }
+            if (fmap.size() > 0) {
+                context.write(key, fmap);
             }
         }
     }
