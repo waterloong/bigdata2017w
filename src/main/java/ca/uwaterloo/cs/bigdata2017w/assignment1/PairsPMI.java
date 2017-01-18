@@ -27,6 +27,7 @@ import tl.lin.data.pair.PairOfFloatInt;
 import tl.lin.data.pair.PairOfStrings;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class PairsPMI extends Configured implements Tool {
@@ -163,7 +164,7 @@ public class PairsPMI extends Configured implements Tool {
             FileSystem hdfs = FileSystem.get(context.getConfiguration());
             RemoteIterator<LocatedFileStatus> files = hdfs.listFiles(new Path(INTERMEDIATE_FILE), false);
             while (files.hasNext()) {
-                try (Scanner in = new Scanner(hdfs.open(files.next().getPath()))){
+                try (Scanner in = new Scanner(hdfs.open(files.next().getPath()), StandardCharsets.UTF_8.name())){
                     while (in.hasNextLine()) {
                         String key = in.next();
                         Integer count = in.nextInt();

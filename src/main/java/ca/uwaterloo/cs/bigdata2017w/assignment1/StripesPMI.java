@@ -27,6 +27,7 @@ import tl.lin.data.map.HMapStFW;
 import tl.lin.data.map.HMapStIW;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class StripesPMI extends Configured implements Tool {
@@ -164,7 +165,7 @@ public class StripesPMI extends Configured implements Tool {
             FileSystem hdfs = FileSystem.get(context.getConfiguration());
             RemoteIterator<LocatedFileStatus> files = hdfs.listFiles(new Path(INTERMEDIATE_FILE), false);
             while (files.hasNext()) {
-                try (Scanner in = new Scanner(hdfs.open(files.next().getPath()))){
+                try (Scanner in = new Scanner(hdfs.open(files.next().getPath()), StandardCharsets.UTF_8.name())){
                     while (in.hasNextLine()) {
                         String key = in.next();
                         Integer count = in.nextInt();
