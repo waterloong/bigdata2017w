@@ -9,7 +9,7 @@ Stripes implementation includes 2 jobs. The 1st job is identical to pair impleme
 Question 2.
 ------------
 it takes 50.696s to run PairPMI on student.cs.linux.uwaterloo.ca machine.
-it takes 16.652s to run StripesPMI on student.cs.linux.uwaterloo.ca machine.
+it takes 14.592s to run StripesPMI on student.cs.linux.uwaterloo.ca machine.
 
 Question 3.
 ---------------
