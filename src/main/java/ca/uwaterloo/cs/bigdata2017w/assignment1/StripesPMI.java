@@ -26,7 +26,7 @@ import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.map.HMapStFW;
 import tl.lin.data.map.HMapStIW;
 import tl.lin.data.map.HashMapWritable;
-import tl.lin.data.pair.PairOfIntFloat;
+import tl.lin.data.pair.PairOfFloatInt;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -153,7 +153,7 @@ public class StripesPMI extends Configured implements Tool {
     }
 
     private static final class StripesReducer extends
-            Reducer<Text, HMapStIW, Text, HashMapWritable<Text, PairOfIntFloat>> {
+            Reducer<Text, HMapStIW, Text, HashMapWritable<Text, PairOfFloatInt>> {
 
         private int threshold = 0;
         private float numberOfLines = 0;
@@ -189,7 +189,7 @@ public class StripesPMI extends Configured implements Tool {
             while (iter.hasNext()) {
                 imap.plus(iter.next());
             }
-            HashMapWritable<Text, PairOfIntFloat> pmap = new HashMapWritable<>();
+            HashMapWritable<Text, PairOfFloatInt> pmap = new HashMapWritable<>();
 
 
             for (String w2: imap.keySet()) {
@@ -200,8 +200,8 @@ public class StripesPMI extends Configured implements Tool {
                     float pmi = (float) Math.log10(numberOfLines / count1 * coocurrence / count2);
                     Text key2 = new Text();
                     key2.set(w2);
-                    PairOfIntFloat countPMI = new PairOfIntFloat();
-                    countPMI.set(coocurrence, pmi);
+                    PairOfFloatInt countPMI = new PairOfFloatInt();
+                    countPMI.set(pmi, coocurrence);
                     pmap.put(key2, countPMI);
                 }
             }
