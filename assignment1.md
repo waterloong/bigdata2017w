@@ -7,9 +7,16 @@ Pair implementation includes 2 jobs. Mapper in the 1st job maps a text line into
 Stripes implementation includes 2 jobs. The 1st job is identical to pair implementation. The second job first maps each text lines into KVP of word to map of words to counts. The reducer first read the result of previous job, put the result into a hashtable in the setup phase. Then aggregate the result from intermediate KVP (words, words to counts map). Then get the count of each word from word count hashtable and number of lines from setup phase. Then use the 4 numbers to calculate PMI. Write result as KVP firstWord  and map of secondWord to (pmi, co-occurrence) pair to disk.
 
 Question 2.
+------------
+it takes 50.696s to run PairPMI on student.cs.linux.uwaterloo.ca machine.
+it takes 16.652s to run StripesPMI on student.cs.linux.uwaterloo.ca machine.
+
+Question 3.
 ---------------
+Without "-imc",
 It takes 57.638s to run PairPMI on student.cs.linux.uwaterloo.ca machine.
-It takes 17.639s to run StripesPMI on student.cs.linux.uwaterloo.ca machine.
+It takes 16.569s to run StripesPMI on student.cs.linux.uwaterloo.ca machine.
+
 
 
 Question 4.
