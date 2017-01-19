@@ -23,6 +23,7 @@ Question 4.
 -------------------------
    77198  308792 2327802
 
+Total number of lines is 308792.
 
 Question 5. (highest PMI)
 --------------------
