@@ -190,7 +190,7 @@ public class StripesPMI extends Configured implements Tool {
                 imap.plus(iter.next());
             }
             HashMapWritable<Text, PairOfIntFloat> pmap = new HashMapWritable<>();
-            Text key2 = new Text();
+
 
             for (String w2: imap.keySet()) {
                 int coocurrence = imap.get(w2);
@@ -198,6 +198,7 @@ public class StripesPMI extends Configured implements Tool {
                     int count1 = this.wordCounts.get(key.toString());
                     int count2 = this.wordCounts.get(w2);
                     float pmi = (float) Math.log10(numberOfLines / count1 * coocurrence / count2);
+                    Text key2 = new Text();
                     key2.set(w2);
                     PairOfIntFloat countPMI = new PairOfIntFloat();
                     countPMI.set(coocurrence, pmi);
