@@ -25,6 +25,8 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.map.HMapStFW;
 import tl.lin.data.map.HMapStIW;
+import tl.lin.data.map.HashMapWritable;
+import tl.lin.data.pair.PairOfIntFloat;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -152,12 +154,14 @@ public class StripesPMI extends Configured implements Tool {
     }
 
     private static final class StripesReducer extends
-            Reducer<Text, HMapStIW, Text, HMapStFW> {
+            Reducer<Text, HMapStIW, Text, HashMapWritable<Text, PairOfIntFloat>> {
 
         private int threshold = 0;
         private float numberOfLines = 0;
         private static final Map<String, Integer> wordCounts = new HashMap<>();
-        private static final HMapStFW fmap = new HMapStFW();
+        private static final HashMapWritable<Text, PairOfIntFloat> pmap = new HashMapWritable<>();
+        private static final Text WORD = new Text();
+        private static final PairOfIntFloat countPMI = new PairOfIntFloat();
 
         @Override
         public void setup(Context context) throws IOException {
@@ -189,7 +193,7 @@ public class StripesPMI extends Configured implements Tool {
             while (iter.hasNext()) {
                 imap.plus(iter.next());
             }
-            fmap.clear();
+            pmap.clear();
 
             for (String w2: imap.keySet()) {
                 int coocurrence = imap.get(w2);
@@ -197,11 +201,13 @@ public class StripesPMI extends Configured implements Tool {
                     int count1 = this.wordCounts.get(key.toString());
                     int count2 = this.wordCounts.get(w2);
                     float pmi = (float) Math.log10(numberOfLines / count1 * coocurrence / count2);
-                    fmap.increment(w2, pmi);
+                    WORD.set(w2);
+                    countPMI.set(coocurrence, pmi);
+                    pmap.put(WORD, countPMI);
                 }
             }
-            if (fmap.size() > 0) {
-                context.write(key, fmap);
+            if (pmap.size() > 0) {
+                context.write(key, pmap);
             }
         }
     }
