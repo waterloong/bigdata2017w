@@ -111,7 +111,6 @@ public class StripesPMI extends Configured implements Tool {
     }
 
     private static final class StripesMapper extends Mapper<LongWritable, Text, Text, HMapStIW> {
-        private static final Text KEY = new Text();
         private static final HMapStIW MAP = new HMapStIW();
 
         @Override
@@ -159,9 +158,6 @@ public class StripesPMI extends Configured implements Tool {
         private int threshold = 0;
         private float numberOfLines = 0;
         private static final Map<String, Integer> wordCounts = new HashMap<>();
-        private static final HashMapWritable<Text, PairOfIntFloat> pmap = new HashMapWritable<>();
-        private static final Text WORD = new Text();
-        private static final PairOfIntFloat countPMI = new PairOfIntFloat();
 
         @Override
         public void setup(Context context) throws IOException {
@@ -193,7 +189,8 @@ public class StripesPMI extends Configured implements Tool {
             while (iter.hasNext()) {
                 imap.plus(iter.next());
             }
-            pmap.clear();
+            HashMapWritable<Text, PairOfIntFloat> pmap = new HashMapWritable<>();
+            Text key2 = new Text();
 
             for (String w2: imap.keySet()) {
                 int coocurrence = imap.get(w2);
@@ -201,9 +198,10 @@ public class StripesPMI extends Configured implements Tool {
                     int count1 = this.wordCounts.get(key.toString());
                     int count2 = this.wordCounts.get(w2);
                     float pmi = (float) Math.log10(numberOfLines / count1 * coocurrence / count2);
-                    WORD.set(w2);
+                    key2.set(w2);
+                    PairOfIntFloat countPMI = new PairOfIntFloat();
                     countPMI.set(coocurrence, pmi);
-                    pmap.put(WORD, countPMI);
+                    pmap.put(key2, countPMI);
                 }
             }
             if (pmap.size() > 0) {
