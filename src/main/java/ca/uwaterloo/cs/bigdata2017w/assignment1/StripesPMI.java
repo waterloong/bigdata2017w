@@ -112,7 +112,7 @@ public class StripesPMI extends Configured implements Tool {
 
     private static final class StripesMapper extends Mapper<LongWritable, Text, Text, HMapStIW> {
         private static final HMapStIW MAP = new HMapStIW();
-
+        private static final Text KEY = new Text();
         @Override
         public void map(LongWritable key, Text value, Context context)
                 throws IOException, InterruptedException {
