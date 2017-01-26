@@ -42,8 +42,8 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
       .map(t => {
         val w1 = t._1
         val g1 = t._2.values.sum.toFloat
-        val stripe = t._2.map { case (w2, count) => w2 -> count / g1}
-        s"$w1 $stripe"
+        val stripe = t._2.map { case (w2, count) => s"$w2=${count / g1}" }.mkString(", ")
+        s"$w1\t{$stripe}"
       })
     counts.saveAsTextFile(args.output())
   }
