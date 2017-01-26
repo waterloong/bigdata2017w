@@ -10,9 +10,7 @@ import org.apache.log4j._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.rogach.scallop._
 
-
-
-object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
+object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
@@ -33,34 +31,20 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
       .flatMap(line => {
         val tokens = tokenize(line)
         if (tokens.size > 1) {
-          tokens.sliding(2).flatMap(p => List(p(0) + " *", p.mkString(" "))).toList
+          tokens.sliding(2).map(p => (p(0), Map(p(1) -> 1))).toList
         } else {
-          List()
+          List[(String, Map[String, Int])]()
         }
       })
-      .map((bigram: String) => (bigram, 1))
-      .reduceByKey(_ + _)
-      .map(t => {
-        val wpair = t._1.split(" ")
-        val w1 = wpair(0)
-        val w2 = wpair(1)
-        (w1, (w2, t._2))
+      .reduceByKey((m1, m2) => {
+        m1 ++ m2.map { case (k,v) => k -> (v + m1.getOrElse(k,0)) }
       })
-      .groupByKey()
-      .flatMap(t => {
-        val g1 = t._2.find(_._1 == "*").get._2.toFloat
-        t._2
-          .map(w2f => {
-            val w1 = t._1
-            val w2 = w2f._1
-            if (w2 == "*") {
-              s"($w1, $w2) $g1"
-            } else {
-              val g2 = w2f._2 / g1
-              s"($w1, $w2) $g2"
-            }
-          }).toList
-        })
+      .map(t => {
+        val w1 = t._1
+        val g1 = t._2.values.sum.toFloat
+        val stripe = t._2.map { case (w2, count) => w2 -> count / g1}
+        s"$w1 $stripe"
+      })
     counts.saveAsTextFile(args.output())
   }
 }
