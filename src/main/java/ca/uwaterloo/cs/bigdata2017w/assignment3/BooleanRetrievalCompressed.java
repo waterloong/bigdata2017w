@@ -53,13 +53,12 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     }
     // fuck you altiscale
 //    paths.sort(Comparator.comparing(Path::getName));
-    paths.sort(new Comparator<Path>() {
+    Collections.sort(paths, new Comparator<Path>() {
       @Override
       public int compare(Path p1, Path p2) {
         return p1.getName().compareTo(p2.getName());
       }
     });
-
     this.numberOfReducers = paths.size();
     dfs = fs;
     collection = fs.open(new Path(collectionPath));
