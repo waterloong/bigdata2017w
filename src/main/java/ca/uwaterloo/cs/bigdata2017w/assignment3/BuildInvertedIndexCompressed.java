@@ -1,19 +1,3 @@
-/**
- * Bespin: reference implementations of "big data" algorithms
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ca.uwaterloo.cs.bigdata2017w.assignment3;
 
 import io.bespin.java.util.Tokenizer;
@@ -39,7 +23,6 @@ import tl.lin.data.fd.Object2IntFrequencyDistribution;
 import tl.lin.data.fd.Object2IntFrequencyDistributionEntry;
 import tl.lin.data.pair.PairOfObjectInt;
 import tl.lin.data.pair.PairOfStringInt;
-import tl.lin.data.pair.PairOfWritables;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -66,7 +49,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         COUNTS.increment(token);
       }
 
-      // Emit postings.
+      // Emit postingBytes.
       for (PairOfObjectInt<String> e : COUNTS) {
         context.write(new PairOfStringInt(e.getLeftElement(), (int) docno.get()), new IntWritable(e.getRightElement()));
       }
@@ -82,30 +65,34 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
   }
 
   private static final class MyReducer extends
-          Reducer<PairOfStringInt, IntWritable, Text, PairOfWritables<VIntWritable, BytesWritable>> {
+          Reducer<PairOfStringInt, IntWritable, Text, BytesWritable> {
 
     private String prevTerm = null;
     private int prevDoc = 0;
     private int df = 0;
     private static final Text TERM = new Text();
-    private static final VIntWritable DF = new VIntWritable();
-    private static ByteArrayOutputStream postings = new ByteArrayOutputStream();
-    private static DataOutputStream dataOutputStream = new DataOutputStream(postings);
+    private static ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
+    private static DataOutputStream allData = new DataOutputStream(allBytes);
+    private static ByteArrayOutputStream postingBytes = new ByteArrayOutputStream();
+    private static DataOutputStream postingData = new DataOutputStream(postingBytes);
 
     @Override
     public void reduce(PairOfStringInt key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       Iterator<IntWritable> iter = values.iterator();
       if (prevTerm != null && !prevTerm.equals(key.getLeftElement())) {
-        dataOutputStream.flush();
-        postings.flush();
-
+        postingData.flush();
+        postingBytes.flush();
         TERM.set(prevTerm);
-        DF.set(df);
 
-        context.write(TERM, new PairOfWritables<>(DF, new BytesWritable(postings.toByteArray())));
+        WritableUtils.writeVInt(allData, df);
+        allData.write(postingBytes.toByteArray());
+        allData.flush();
+        allBytes.flush();
 
-        postings.reset();
+        context.write(TERM, new BytesWritable(allBytes.toByteArray()));
+        postingBytes.reset();
+        allBytes.reset();
         prevDoc = 0;
         df = 0;
       }
@@ -114,10 +101,10 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
       while (iter.hasNext()) {
         int currDoc = key.getRightElement();
-        WritableUtils.writeVInt(dataOutputStream, currDoc - prevDoc);
+        WritableUtils.writeVInt(postingData, currDoc - prevDoc);
         prevDoc = currDoc;
         int tf = iter.next().get();
-        WritableUtils.writeVInt(dataOutputStream, tf);
+        WritableUtils.writeVInt(postingData, tf);
         df ++;
       }
 
@@ -126,12 +113,18 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
       super.cleanup(context);
+      postingData.flush();
+      postingBytes.flush();
       TERM.set(prevTerm);
-      dataOutputStream.flush();
-      postings.flush();
-      context.write(TERM, new PairOfWritables<>(DF, new BytesWritable(postings.toByteArray())));
-      dataOutputStream.close();
-      postings.close();
+
+      WritableUtils.writeVInt(allData, df);
+      allData.write(postingBytes.toByteArray());
+      allData.flush();
+      allBytes.flush();
+
+      context.write(TERM, new BytesWritable(allBytes.toByteArray()));
+      postingData.close();
+      postingBytes.close();
     }
   }
 
@@ -181,7 +174,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     job.setMapOutputKeyClass(PairOfStringInt.class);
     job.setMapOutputValueClass(IntWritable.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(PairOfWritables.class);
+    job.setOutputValueClass(BytesWritable.class);
     job.setOutputFormatClass(MapFileOutputFormat.class);
 
     job.setMapperClass(MyMapper.class);
