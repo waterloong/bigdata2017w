@@ -3,10 +3,17 @@ Assignment 3
 
 Question 1
 ------------
-3.8M
+3.8M	cs489-2017w-waterloong-a3-index-shakespeare/part-r-00000  
+3.8M	cs489-2017w-waterloong-a3-index-shakespeare
 
 Question 2
 ---------------
+0        cs489-2017w-waterloong-a3-index-wiki/_SUCCESS    
+187.1 M  cs489-2017w-waterloong-a3-index-wiki/part-r-00000     
+240.9 M  cs489-2017w-waterloong-a3-index-wiki/part-r-00001   
+195.5 M  cs489-2017w-waterloong-a3-index-wiki/part-r-00002  
+239.8 M  cs489-2017w-waterloong-a3-index-wiki/part-r-00003  
+
 863.2 M
 
 Question 3
