@@ -3,7 +3,7 @@ Assignment 3
 
 Question 1
 ------------
-3.7M
+3.8M
 
 Question 2
 ---------------
