@@ -33,6 +33,7 @@ object Q2 extends Tokenizer {
         .map(line => {
           (line.split("\\|")(0).toInt, 0)
         })
+
       sc.textFile(args.input() + "/orders.tbl")
             .map(line => {
               val cols = line.split("\\|")
@@ -40,10 +41,13 @@ object Q2 extends Tokenizer {
             })
         .cogroup(items)
         .filter(_._2._2.nonEmpty)
+          .flatMap(t => {
+            t._2._2.map(unused => (t._1, (t._2._1, List()))).toList
+          })
         .sortByKey(true, 1)
-          .take(20)
-        .foreach(tuple => {
-          println(tuple._2._1.head, tuple._1)
+        .take(20)
+        .foreach(t => {
+          println(t._2._1, t._1)
         })
     } else {
       val sparkSession = SparkSession.builder.getOrCreate
@@ -57,11 +61,14 @@ object Q2 extends Tokenizer {
             (r.getInt(0), r.getString(6))
           })
         .cogroup(items)
-        .filter(!_._2._2.isEmpty)
+        .filter(_._2._2.nonEmpty)
+        .flatMap(t => {
+          t._2._2.map(unused => (t._1, (t._2._1, List()))).toList
+        })
         .sortByKey(true, 1)
         .take(20)
         .foreach(t => {
-          println(t._2._1.head, t._1)
+          println(t._2._1, t._1)
         })
     }
 

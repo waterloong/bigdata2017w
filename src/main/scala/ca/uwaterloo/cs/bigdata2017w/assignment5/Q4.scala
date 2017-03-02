@@ -27,8 +27,6 @@ object Q4 extends Tokenizer {
 
     if (args.text()) {
 
-
-
       val itemMap = sc.textFile(input + "/lineitem.tbl")
         .filter(_.split("\\|")(10).startsWith(date))
         .map(line => {

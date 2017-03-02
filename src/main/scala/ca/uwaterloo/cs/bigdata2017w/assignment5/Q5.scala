@@ -17,6 +17,7 @@ class NoDateConf(args: Seq[String]) extends ScallopConf(args) with Tokenizer {
   val parquet = opt[Boolean](descr = "parquet")
   verify()
 }
+
 object Q5 extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
@@ -31,101 +32,95 @@ object Q5 extends Tokenizer {
     val sc = new SparkContext(conf)
 
     if (args.text()) {
-      val itemMap = sc.textFile(input + "/lineitem.tbl")
+      val nationMap = sc.textFile(input + "/nation.tbl")
+        .filter(line => {
+          val nationKey = line.split("\\|")(0).toInt
+          // ca = 3, us = 24
+          nationKey == 3 || nationKey == 24
+        })
         .map(line => {
           val cols = line.split("\\|")
-          (cols(0).toInt, Map(cols(10).subSequence(0, 7) -> 1))
-        })
-        .reduceByKey((map1, map2) => {
-          map1 ++ map2.map{ case (k,v) => k -> (v + map1.getOrElse(k,0)) }
-        })
-        .collectAsMap()
-      val bcItemMap = sc.broadcast(itemMap)
-
-      val orderMap = sc.textFile(input + "/orders.tbl")
-        .map(line => {
-          val cols = line.split("\\|")
-          val map = bcItemMap.value.getOrElse(cols(0).toInt, Map())
-          (cols(1).toInt, map)
-        })
-        .filter(_._2.nonEmpty)
-        .reduceByKey((map1, map2) => {
-          map1 ++ map2.map{ case (k,v) => k -> (v + map1.getOrElse(k,0)) }
-        })
-        .collectAsMap()
-
-
-      bcItemMap.destroy()
-      val bcOrderMap = sc.broadcast(orderMap)
+          (cols(0).toInt, cols(1))
+        }).collectAsMap()
+      val bcNationMap = sc.broadcast(nationMap)
 
       val customerMap = sc.textFile(input + "/customer.tbl")
         .map(line => {
           val cols = line.split("\\|")
-          val map = bcOrderMap.value.getOrElse(cols(0).toInt, Map())
-          (cols(3).toInt, map)
+          (cols(0).toInt, bcNationMap.value.getOrElse(cols(3).toInt, ""))
         })
-        .filter(_._2.nonEmpty)
-        .reduceByKey((map1, map2) => {
-          map1 ++ map2.map{ case (k,v) => k -> (v + map1.getOrElse(k,0)) }
-        })
+        .filter(_._2 != "")
         .collectAsMap()
-
-      bcOrderMap.destroy()
       val bcCustomerMap = sc.broadcast(customerMap)
 
-      sc.textFile(input + "/nation.tbl")
-          .filter(line => {
-            val nationKey = line.split("\\|")(0).toInt
-            // ca = 3, us = 24
-            nationKey == 3 || nationKey == 24
-          })
-        .flatMap(line => {
+      val orderMap = sc.textFile(input + "/orders.tbl")
+        .map(line => {
           val cols = line.split("\\|")
-          bcCustomerMap.value.getOrElse(cols(0).toInt, Map()).view.map { case (k, v) => (cols(1), k, v)}
+          (cols(0).toInt, bcCustomerMap.value.getOrElse(cols(1).toInt, ""))
         })
-        .foreach(println(_))
+        .filter(_._2 != "")
+        .collectAsMap()
+      bcCustomerMap.destroy()
+      val bcOrderMap = sc.broadcast(orderMap)
+
+      sc.textFile(input + "/lineitem.tbl")
+        .map(line => {
+          val cols = line.split("\\|")
+          (bcOrderMap.value.getOrElse(cols(0).toInt, ""), cols(10).substring(0, 7), 1)
+        })
+        .filter(_._1 != "").map(t => {
+        ((t._1, t._2), t._3)
+      })
+        .reduceByKey(_ + _)
+        .collect()
+        .foreach(t => {
+          println((t._1._1, t._1._2, t._2))
+        })
 
     } else {
       val sparkSession = SparkSession.builder.getOrCreate
-
-      val itemMap = sparkSession.read.parquet(input + "/lineitem/").rdd
-        .map(r => {
-          (r.getInt(0), 1)
+      val nationMap = sparkSession.read.parquet(input + "/nation/").rdd
+        .filter(r => {
+          val nationKey = r.getInt(0)
+          // ca = 3, us = 24
+          nationKey == 3 || nationKey == 24
         })
-        .reduceByKey(_ + _)
-        .collectAsMap()
-      val bcItemMap = sc.broadcast(itemMap)
-
-      val orderMap = sparkSession.read.parquet(input + "/orders/").rdd
         .map(r => {
-          (r.getInt(1), bcItemMap.value.getOrElse(r.getInt(0).toInt, 0))
-        })
-        .reduceByKey(_ + _)
-        .collectAsMap()
-
-
-      bcItemMap.destroy()
-      val bcOrderMap = sc.broadcast(orderMap)
+          (r.getInt(0), r.getString(1))
+        }).collectAsMap()
+      val bcNationMap = sc.broadcast(nationMap)
 
       val customerMap = sparkSession.read.parquet(input + "/customer/").rdd
         .map(r => {
-          (r.getInt(3), bcOrderMap.value.getOrElse(r.getInt(0), 0))
+          (r.getInt(0), bcNationMap.value.getOrElse(r.getInt(3), ""))
         })
-        .reduceByKey(_ + _)
+        .filter(_._2 != "")
         .collectAsMap()
-      bcOrderMap.destroy()
       val bcCustomerMap = sc.broadcast(customerMap)
 
-      sparkSession.read.parquet(input + "/nation/").rdd
+      val orderMap = sparkSession.read.parquet(input + "/orders/").rdd
         .map(r => {
-          (r.getInt(0), r.getString(1), bcCustomerMap.value.getOrElse(r.getInt(0), 0))
+          (r.getInt(0), bcCustomerMap.value.getOrElse(r.getInt(1), ""))
         })
-        .filter(_._3 > 0)
-        .sortBy(_._1)
+        .filter(_._2 != "")
+        .collectAsMap()
+      bcCustomerMap.destroy()
+      val bcOrderMap = sc.broadcast(orderMap)
+
+      sparkSession.read.parquet(input + "/lineitem/").rdd
+        .map(r => {
+          (bcOrderMap.value.getOrElse(r.getInt(0), ""), r.getString(10).substring(0, 7), 1)
+        })
+        .filter(_._1 != "").map(t => {
+        ((t._1, t._2), t._3)
+      })
+        .reduceByKey(_ + _)
         .collect()
-        .foreach(println(_))
+        .foreach(t => {
+          println((t._1._1, t._1._2, t._2))
+        })
+      }
+
 
     }
-
   }
-}
