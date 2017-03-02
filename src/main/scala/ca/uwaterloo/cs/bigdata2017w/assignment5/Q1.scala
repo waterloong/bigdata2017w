@@ -31,7 +31,7 @@ object Q1 extends Tokenizer {
     val input = args.input()
     log.info("Input: " + input)
     log.info("Date: " + date)
-    log.info("format: " + (if (args.text()) "text"  else "parquet"))
+    log.info("format: " + (if (args.text()) "text" else "parquet"))
 
     val conf = new SparkConf().setAppName("Q1")
     if (args.text()) {
