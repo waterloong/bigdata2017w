@@ -64,7 +64,7 @@ public class InsertCollectionHBase extends Configured implements Tool {
 
             for (Text t: values) {
                 Put put = new Put(toBytes(key));
-                put.addColumn(CF, TEXT, t.copyBytes());
+                put.addColumn(CF, TEXT, t.toString().getBytes());
                 context.write(null, put);
             }
         }
@@ -136,6 +136,7 @@ public class InsertCollectionHBase extends Configured implements Tool {
         job.setJobName(BuildInvertedIndexHBase.class.getSimpleName());
         job.setJarByClass(BuildInvertedIndexHBase.class);
 
+        job.setPartitionerClass(MyPartitioner.class);
         job.setNumReduceTasks(args.numReducers);
 
         FileInputFormat.setInputPaths(job, new Path(args.collection));
