@@ -121,7 +121,7 @@ public class BooleanRetrievalHBase extends Configured implements Tool {
   public String fetchLine(long offset) throws IOException {
     Get get = new Get(toBytes(offset));
     Result result = collectionTable.get(get);
-    String d = new String(result.getColumnCells(CF, TEXT).get(0).getValueArray());
+    String d = new String(CellUtil.cloneValue(result.getColumnCells(CF, TEXT).get(0)));
     return d.length() > 80 ? d.substring(0, 80) + "..." : d;
   }
 
