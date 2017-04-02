@@ -2,7 +2,6 @@ package ca.uwaterloo.cs.bigdata2017w.assignment7;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -12,13 +11,12 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -26,7 +24,6 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
-import tl.lin.data.pair.PairOfStringInt;
 
 import java.io.IOException;
 
@@ -37,16 +34,15 @@ public class InsertCollectionHBase extends Configured implements Tool {
     public static final byte[] CF = FAMILIES[0].getBytes();
     public static final byte[] TEXT = "text".getBytes();
 
-    private FSDataInputStream collection;
     private Table table;
 
     private InsertCollectionHBase() {}
 
-    protected static class MyPartitioner extends Partitioner<PairOfStringInt, IntWritable> {
+    protected static class MyPartitioner extends Partitioner<IntWritable, Text> {
 
         @Override
-        public int getPartition(PairOfStringInt key, IntWritable value, int numReduceTasks) {
-            return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
+        public int getPartition(IntWritable key, Text value, int numReduceTasks) {
+            return (key.get() & Integer.MAX_VALUE) % numReduceTasks;
         }
     }
 
@@ -145,12 +141,9 @@ public class InsertCollectionHBase extends Configured implements Tool {
 
         FileInputFormat.setInputPaths(job, new Path(args.collection));
 
-        job.setMapOutputKeyClass(PairOfStringInt.class);
-        job.setMapOutputValueClass(IntWritable.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(BytesWritable.class);
-        job.setOutputFormatClass(MapFileOutputFormat.class);
-        ;
+        job.setMapOutputKeyClass(LongWritable.class);
+        job.setMapOutputValueClass(Text.class);
+
         TableMapReduceUtil.initTableReducerJob(args.table, MyReducer.class, job);
 
         long startTime = System.currentTimeMillis();
