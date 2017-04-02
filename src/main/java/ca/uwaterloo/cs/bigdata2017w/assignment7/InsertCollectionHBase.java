@@ -77,7 +77,7 @@ public class InsertCollectionHBase extends Configured implements Tool {
 
     private static final class Args {
 
-        @Option(name = "-collection", metaVar = "[path]", required = true, usage = "collection path")
+        @Option(name = "-input", metaVar = "[path]", required = true, usage = "collection path")
         public String collection;
 
         @Option(name = "-config", metaVar = "[path]", required = true, usage = "HBase config")
