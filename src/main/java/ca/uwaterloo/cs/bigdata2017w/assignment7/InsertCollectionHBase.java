@@ -11,7 +11,6 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -38,19 +37,19 @@ public class InsertCollectionHBase extends Configured implements Tool {
 
     private InsertCollectionHBase() {}
 
-    protected static class MyPartitioner extends Partitioner<IntWritable, Text> {
+    protected static class MyPartitioner extends Partitioner<LongWritable, Text> {
 
         @Override
-        public int getPartition(IntWritable key, Text value, int numReduceTasks) {
-            return (key.get() & Integer.MAX_VALUE) % numReduceTasks;
+        public int getPartition(LongWritable key, Text value, int numReduceTasks) {
+            return ((int)(key.get()) & Integer.MAX_VALUE) % numReduceTasks;
         }
     }
 
     private static final class MyReducer extends
-            TableReducer<IntWritable, Text, ImmutableBytesWritable> {
+            TableReducer<LongWritable, Text, ImmutableBytesWritable> {
 
-        private static byte[] toBytes(IntWritable intWritable) {
-            int val = intWritable.get();
+        private static byte[] toBytes(LongWritable intWritable) {
+            long val = intWritable.get();
             return new byte[] {
                     (byte) (val >> 24),
                     (byte) (val >> 16),
@@ -60,7 +59,7 @@ public class InsertCollectionHBase extends Configured implements Tool {
         }
 
         @Override
-        public void reduce(IntWritable key, Iterable<Text> values, Context context)
+        public void reduce(LongWritable key, Iterable<Text> values, Context context)
                 throws IOException, InterruptedException {
 
             for (Text t: values) {
