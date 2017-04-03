@@ -35,7 +35,7 @@ import java.util.*;
  */
 public class HBaseSearchEndpoint  extends Configured implements Tool {
 
-    private static final Logger LOG = Logger.getLogger(InsertCollectionHBase.class);
+    private static final Logger LOG = Logger.getLogger(HBaseSearchEndpoint.class);
     public static final String[] FAMILIES = { "c" };
     public static final byte[] CF = FAMILIES[0].getBytes();
     public static final byte[] TEXT = "text".getBytes();
@@ -47,7 +47,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
 
     private String runQuery(String q) throws IOException {
         this.stack = new Stack<>();
-        String[] terms = q.split("\\+");
+        String[] terms = q.split("\\s+");
 
         for (String t : terms) {
             if (t.equals("AND")) {
@@ -110,9 +110,12 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
 
     private Set<Integer> fetchDocumentSet(String term) throws IOException {
         Set<Integer> set = new LinkedHashSet<>();
-        for (Cell cell : fetchPostings(term)) {
-            int docid = Bytes.toInt(CellUtil.cloneQualifier(cell));
-            set.add(docid);
+        List<Cell> cells = fetchPostings(term);
+        if (cells != null) {
+            for (Cell cell : cells) {
+                int docid = Bytes.toInt(CellUtil.cloneQualifier(cell));
+                set.add(docid);
+            }
         }
         return set;
     }

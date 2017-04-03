@@ -25,7 +25,7 @@ public class BooleanRetrievalHBase extends Configured implements Tool {
   private Stack<Set<Integer>> stack;
   private Table indexTable;
   private Table collectionTable;
-  private static final Logger LOG = Logger.getLogger(InsertCollectionHBase.class);
+  private static final Logger LOG = Logger.getLogger(BooleanRetrievalHBase.class);
 
   public static final String[] FAMILIES = { "c" };
   public static final byte[] CF = FAMILIES[0].getBytes();
@@ -96,9 +96,12 @@ public class BooleanRetrievalHBase extends Configured implements Tool {
 
   private Set<Integer> fetchDocumentSet(String term) throws IOException {
     Set<Integer> set = new LinkedHashSet<>();
-    for (Cell cell : fetchPostings(term)) {
-      int docid = Bytes.toInt(CellUtil.cloneQualifier(cell));
-      set.add(docid);
+    List<Cell> cells = fetchPostings(term);
+    if (cells != null) {
+      for (Cell cell : cells) {
+        int docid = Bytes.toInt(CellUtil.cloneQualifier(cell));
+        set.add(docid);
+      }
     }
     return set;
   }
