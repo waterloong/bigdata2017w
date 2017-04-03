@@ -47,7 +47,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
 
     private String runQuery(String q) throws IOException {
         this.stack = new Stack<>();
-        String[] terms = q.split("\\s+");
+        String[] terms = q.split("\\+");
 
         for (String t : terms) {
             if (t.equals("AND")) {
