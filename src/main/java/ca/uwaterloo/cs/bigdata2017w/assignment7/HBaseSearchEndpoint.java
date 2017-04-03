@@ -15,6 +15,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -48,8 +49,9 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
     private String runQuery(String q) throws IOException {
         this.stack = new Stack<>();
         String[] terms = q.split("\\s+");
-
+        LOG.info(q);
         for (String t : terms) {
+            LOG.info("term: " + t);
             if (t.equals("AND")) {
                 performAND();
             } else if (t.equals("OR")) {
@@ -114,6 +116,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
         if (cells != null) {
             for (Cell cell : cells) {
                 int docid = Bytes.toInt(CellUtil.cloneQualifier(cell));
+                LOG.info("docid: " + docid);
                 set.add(docid);
             }
         }
@@ -202,8 +205,9 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
     private class SearchServlet extends HttpServlet {
 
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            resp.setContentType("text/json");
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+                throws ServletException, IOException {
+            resp.setStatus(HttpStatus.OK_200);
             String query = req.getParameter("query");
             String result = runQuery(query);
             resp.getWriter().println(result);
