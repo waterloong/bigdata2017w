@@ -70,6 +70,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
             ObjectNode objectNode = mapper.createObjectNode();
             objectNode.put("docid", i);
             objectNode.put("text", line);
+            arrayNode.add(objectNode);
         }
         return arrayNode.toString();
     }
