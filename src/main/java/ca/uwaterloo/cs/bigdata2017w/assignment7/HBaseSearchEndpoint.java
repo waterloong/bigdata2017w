@@ -49,9 +49,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
     private String runQuery(String q) throws IOException {
         this.stack = new Stack<>();
         String[] terms = q.split("\\s+");
-        LOG.info(q);
         for (String t : terms) {
-            LOG.info("term: " + t);
             if (t.equals("AND")) {
                 performAND();
             } else if (t.equals("OR")) {
@@ -117,7 +115,6 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
         if (cells != null) {
             for (Cell cell : cells) {
                 int docid = Bytes.toInt(CellUtil.cloneQualifier(cell));
-                LOG.info("docid: " + docid);
                 set.add(docid);
             }
         }
