@@ -180,7 +180,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
         this.indexTable = connection.getTable(TableName.valueOf(args.index));
         this.collectionTable = connection.getTable(TableName.valueOf(args.collection));
 
-        Server server = new Server(8080);
+        Server server = new Server(args.port);
 //        server.setHandler(new HelloHandler());
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
