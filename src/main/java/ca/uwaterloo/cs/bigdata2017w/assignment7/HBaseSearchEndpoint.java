@@ -210,7 +210,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
             String query = req.getParameter("query");
             String result = runQuery(query);
             resp.getWriter().println(result);
-            System.out.println(result);
+            LOG.info(result);
         }
     }
 }
