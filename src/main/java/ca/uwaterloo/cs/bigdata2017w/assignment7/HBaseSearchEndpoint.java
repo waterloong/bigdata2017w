@@ -206,11 +206,11 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
         protected void doGet(HttpServletRequest req, HttpServletResponse resp)
                 throws ServletException, IOException {
             resp.setStatus(HttpStatus.OK_200);
+            resp.setContentType("text/json");
             String query = req.getParameter("query");
             String result = runQuery(query);
             resp.getWriter().println(result);
             System.out.println(result);
-            resp.setStatus(200);
         }
     }
 }
