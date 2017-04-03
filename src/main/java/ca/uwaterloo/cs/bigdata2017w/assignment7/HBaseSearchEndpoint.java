@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -201,11 +200,11 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            super.doGet(req, resp);
+            resp.setContentType("text/json");
             String query = req.getParameter("query");
-            PrintWriter writer = resp.getWriter();
-            writer.println(runQuery(query));
-            writer.flush();
+            String result = runQuery(query);
+            resp.getWriter().println(result);
+            System.out.println(result);
             resp.setStatus(200);
         }
     }
