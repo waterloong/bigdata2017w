@@ -79,7 +79,7 @@ public class InsertCollectionHBase extends Configured implements Tool {
         public String config;
 
         @Option(name = "-index", metaVar = "[name]", required = true, usage = "HBase index to query from")
-        public String table;
+        public String index;
 
         @Option(name = "-reducers", metaVar = "[num]", usage = "number of reducers")
         public int numReducers = 1;
@@ -114,21 +114,21 @@ public class InsertCollectionHBase extends Configured implements Tool {
         Connection connection = ConnectionFactory.createConnection(hbaseConfig);
         Admin admin = connection.getAdmin();
 
-        if (admin.tableExists(TableName.valueOf(args.table))) {
-            LOG.info(String.format("Table '%s' exists: dropping index and recreating.", args.table));
-            LOG.info(String.format("Disabling index '%s'", args.table));
-            admin.disableTable(TableName.valueOf(args.table));
-            LOG.info(String.format("Droppping index '%s'", args.table));
-            admin.deleteTable(TableName.valueOf(args.table));
+        if (admin.tableExists(TableName.valueOf(args.index))) {
+            LOG.info(String.format("Table '%s' exists: dropping index and recreating.", args.index));
+            LOG.info(String.format("Disabling index '%s'", args.index));
+            admin.disableTable(TableName.valueOf(args.index));
+            LOG.info(String.format("Droppping index '%s'", args.index));
+            admin.deleteTable(TableName.valueOf(args.index));
         }
 
-        HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(args.table));
+        HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(args.index));
         for (int i = 0; i < FAMILIES.length; i++) {
             HColumnDescriptor hColumnDesc = new HColumnDescriptor(FAMILIES[i]);
             tableDesc.addFamily(hColumnDesc);
         }
         admin.createTable(tableDesc);
-        LOG.info(String.format("Successfully created index '%s'", args.table));
+        LOG.info(String.format("Successfully created index '%s'", args.index));
 
         admin.close();
 
@@ -144,7 +144,7 @@ public class InsertCollectionHBase extends Configured implements Tool {
         job.setMapOutputKeyClass(LongWritable.class);
         job.setMapOutputValueClass(Text.class);
 
-        TableMapReduceUtil.initTableReducerJob(args.table, MyReducer.class, job);
+        TableMapReduceUtil.initTableReducerJob(args.index, MyReducer.class, job);
 
         long startTime = System.currentTimeMillis();
         job.waitForCompletion(true);
