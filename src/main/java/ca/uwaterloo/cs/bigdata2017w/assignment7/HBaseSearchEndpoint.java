@@ -206,6 +206,7 @@ public class HBaseSearchEndpoint  extends Configured implements Tool {
             PrintWriter writer = resp.getWriter();
             writer.println(runQuery(query));
             writer.flush();
+            resp.setStatus(200);
         }
     }
 }
